@@ -38,7 +38,7 @@ class Category (BaseModel):
 class Course (BaseModel):
     subject = models.CharField(max_length=100, null=False)
     description = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to='courses/%Y/%m')
+    # image = models.ImageField(upload_to='courses/%Y/%m')
 
     # Khóa ngoại
     # on_delete khi mà cái Class Category xóa thì cái trường category ở class này sẽ ra sao ?
@@ -48,4 +48,4 @@ class Course (BaseModel):
 
 
     def __str__(self):
-        return self.name
+        return self.subject
