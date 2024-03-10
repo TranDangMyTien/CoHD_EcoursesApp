@@ -5,6 +5,4 @@ from django.http import HttpResponse
 
 def index(request):
     # e-courses app là view trả ra cho user
-    return render(request, 'index.html', context ={
-        'name' : 'Mtie'}
-    )
+    return render(request, 'index.html')
