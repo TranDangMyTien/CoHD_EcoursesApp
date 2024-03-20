@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser # Chứng thực
 from ckeditor.fields import RichTextField
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class User(AbstractUser):
@@ -62,7 +63,9 @@ class Course (BaseModel):
 class Lesson(BaseModel):
     subject = models.CharField(max_length=100, null=False)
     content = RichTextField()
-    image = models.ImageField(upload_to='lessons/%Y/%m')
+    # image = models.ImageField(upload_to='lessons/%Y/%m')
+    # Vì chỉ định đường dẫn nên chỉ còn như này
+    image = CloudinaryField()
     course = models.ForeignKey(Course, related_name="lessons", on_delete=models.CASCADE)
     # blank=True: Được phép rỗng
     # null=True : Được phép trống

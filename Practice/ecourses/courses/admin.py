@@ -3,10 +3,12 @@ from courses.models import Category, Course, Lesson, Tag
 from django.utils.html import mark_safe
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
+import cloudinary
+
 # Register your models here.
 
 # Form define cho Lesson
-class LessonForm(forms.Form):
+class LessonForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditorUploadingWidget)
     class Meta:
         # Ghi đè lại trường content
@@ -17,7 +19,7 @@ class LessonForm(forms.Form):
 
 
 # Form define cho Course
-class CourseForm(forms.Form):
+class CourseForm(forms.ModelForm):
     description = forms.CharField(widget=CKEditorUploadingWidget)
     class Meta:
         # Ghi đè lại trường description
@@ -29,6 +31,7 @@ class CourseForm(forms.Form):
 
 
 
+
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['id', 'name']
     search_fields = ['name', 'created_date']
@@ -36,7 +39,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class CourseAdmin(admin.ModelAdmin):
     # Dùng đề ghi đè
-    forms = CourseForm
+    form = CourseForm
     list_display = ['id', 'subject', 'created_date', 'category']
     search_fields = ['subject', 'created_date', 'category__name']
     readonly_fields = ['avatar']
@@ -51,7 +54,7 @@ class LessonAdmin(admin.ModelAdmin):
             'all': ('/static/css/main.css',)
         }
     # Dùng đề ghi đè
-    forms = LessonForm
+    form = LessonForm
     list_display = ['id', 'subject', 'created_date', 'active', 'course']
     search_fields = ['subject', 'created_date', 'course__subject']
     # course__subject : tìm theo khóa ngoại
@@ -69,7 +72,13 @@ class LessonAdmin(admin.ModelAdmin):
 
     # {img_url} sẽ được thay thế bằng đường dẫn đến hình ảnh được cung cấp trong đối tượng 'lesson'.
     def avatar(self, lesson):
-        return mark_safe("<img src='/static/{img_url}' alt='{alt}' width=120px/>".format(img_url=lesson.image.name, alt=lesson.subject))
+        # Trường hợp up ảnh lên couldinary
+        if lesson.image:
+
+            if type(lesson.image) is cloudinary.CloudinaryResource:
+                # return mark_safe(f"<img width='250' src='{lesson.image.url}' />")
+                return mark_safe("<img src='{img_url}' alt='{alt}' width=120px/>".format(img_url=lesson.image.url, alt=lesson.subject))
+            return mark_safe("<img src='/static/{img_url}' alt='{alt}' width=120px/>".format(img_url=lesson.image.name, alt=lesson.subject))
 
 
 

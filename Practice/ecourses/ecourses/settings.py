@@ -44,8 +44,9 @@ INSTALLED_APPS = [
     # Thêm app mới tạo (thêm hàm - để nữa muốn chỉnh sữa thì nó dễ hơn)
     # Lệnh make migrations
     'courses.apps.CoursesConfig',
-    'ckeditor_uploader',
     'ckeditor',
+    'ckeditor_uploader',
+
 ]
 
 # Security
@@ -102,8 +103,17 @@ AUTH_USER_MODEL = 'courses.User'
 #Tạo phần nối chuỗi
 MEDIA_ROOT = '%s/courses/static' % BASE_DIR
 # Đường dẫn của ảnh = MEDIA_ROOT + upload_to (Nhớ cài thư viện Pillow)
-CKEDITOR_UPLOAD_PATH = "/ckeditor"
+CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 # URL của CKEditor = MEDIA_ROOT + CKEDITOR_UPLOAD_PATH
+
+import cloudinary
+
+cloudinary.config(
+    cloud_name="dvxzmwuat",
+    api_key="814652831379359",
+    api_secret="BzgebW7M-yEgHzKWgEf176-MK6I"
+
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
