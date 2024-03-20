@@ -43,7 +43,9 @@ INSTALLED_APPS = [
 
     # Thêm app mới tạo (thêm hàm - để nữa muốn chỉnh sữa thì nó dễ hơn)
     # Lệnh make migrations
-    'courses.apps.CoursesConfig'
+    'courses.apps.CoursesConfig',
+    'ckeditor_uploader',
+    'ckeditor',
 ]
 
 # Security
@@ -94,9 +96,14 @@ DATABASES = {
         'HOST': ''
     }
 }
-
+#Lấy cái mình tạo thay vì dùng của Django
 AUTH_USER_MODEL = 'courses.User'
 
+#Tạo phần nối chuỗi
+MEDIA_ROOT = '%s/courses/static' % BASE_DIR
+# Đường dẫn của ảnh = MEDIA_ROOT + upload_to (Nhớ cài thư viện Pillow)
+CKEDITOR_UPLOAD_PATH = "/ckeditor"
+# URL của CKEditor = MEDIA_ROOT + CKEDITOR_UPLOAD_PATH
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
