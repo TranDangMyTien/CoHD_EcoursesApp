@@ -16,13 +16,45 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+# Phần dành cho AdminSite
+from courses.admin import admin_site
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Course API",
+        default_version='v1',
+        description="APIs for CourseApp",
+        contact=openapi.Contact(email="mytien.2682003@gmail.com"),
+        license=openapi.License(name="Trần Đặng Mỹ Tiên"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 # Nơi đầu tiên tìm url => Không được thay đổi tên urlpatterns
 urlpatterns = [
-    # Cộng chuỗi '' và courses.urls
+    # Cộng chuỗi '' và courses.urls -> Đi tìm URL của app courses để chạy
     path('', include('courses.urls')),
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    # Phần AdminSite
+    path('admin/', admin_site.urls),
+
+
+
+    # Phần của CKEditor
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
-
-
+    path("__debug__/", include("debug_toolbar.urls")),
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$',
+            schema_view.without_ui(cache_timeout=0),
+            name='schema-json'),
+    re_path(r'^swagger/$',
+            schema_view.with_ui('swagger', cache_timeout=0),
+            name='schema-swagger-ui'),
+    re_path(r'^redoc/$',
+            schema_view.with_ui('redoc', cache_timeout=0),
+            name='schema-redoc')
 ]

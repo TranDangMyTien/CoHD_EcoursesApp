@@ -46,6 +46,17 @@ INSTALLED_APPS = [
     'courses.apps.CoursesConfig',
     'ckeditor',
     'ckeditor_uploader',
+    # Phần dùng cho Debug toolbar
+    'debug_toolbar',
+
+    'rest_framework',
+    'drf_yasg'
+
+]
+# Phần dành cho Debug Toolbar
+INTERNAL_IPS = [
+
+    "127.0.0.1",
 
 ]
 
@@ -61,6 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Chỉ URL gốc, từ đây nó ánh xạ và tìm các URL
 ROOT_URLCONF = 'ecourses.urls'
 
 TEMPLATES = [

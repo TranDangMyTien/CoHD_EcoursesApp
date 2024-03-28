@@ -1,9 +1,14 @@
 from django.contrib import admin
+from django.db.models import Count
+from django.template.response import TemplateResponse
+
 from courses.models import Category, Course, Lesson, Tag
 from django.utils.html import mark_safe
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 import cloudinary
+from django.urls import path
+
 
 # Register your models here.
 
@@ -37,12 +42,20 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ['name', 'created_date']
 
 
+class LessonInline(admin.StackedInline):
+    model = Lesson
+    pk_name = 'course'
+
+class LessonTagInline(admin.TabularInline):
+    model = Lesson.tags.through
+
 class CourseAdmin(admin.ModelAdmin):
     # Dùng đề ghi đè
     form = CourseForm
     list_display = ['id', 'subject', 'created_date', 'category']
     search_fields = ['subject', 'created_date', 'category__name']
     readonly_fields = ['avatar']
+    inlines = (LessonInline, )
     def avatar(self, course):
         return mark_safe("<img src='/static/{img_url}' alt='{alt}' width=120px/>".format(img_url=course.image.name, alt=course.subject))
 
@@ -80,10 +93,55 @@ class LessonAdmin(admin.ModelAdmin):
                 return mark_safe("<img src='{img_url}' alt='{alt}' width=120px/>".format(img_url=lesson.image.url, alt=lesson.subject))
             return mark_safe("<img src='/static/{img_url}' alt='{alt}' width=120px/>".format(img_url=lesson.image.name, alt=lesson.subject))
 
+    inlines = [LessonTagInline,]
+
+
+# Ghi đè lại trang Admin -> AdminSite : tùy chỉnh theo ý của mình
+class CourseAppAdminSite(admin.AdminSite):
+    # stie_header : Chữ trên tiêu đề trang chủ
+    site_header = 'HỆ THỐNG QUẢN LÝ KHÓA HỌC'
+
+
+
+
+    # Ghi đè lại url của nó
+    def get_urls(self):
+        return [
+            # course-stats : tên đường dẫn mình tự đặt
+            #
+            path('course-stats/', self.course_stats)
+        ] + super().get_urls()
+
+    # Đây là view của mình
+    def course_stats(self, request):
+        # Đếm có bao nhiêu khóa học
+        course_count = Course.objects.count()
+
+        # Đếm 1 khóa học có bao nhiêu bài học
+        # Truy vấn ngược từ 1 Course -> nhiều Lesson
+        stats = Course.objects.annotate(lesson_count=Count('lessons')).values("id", "subject", "lesson_count" )
+
+
+        # Tạo một TemplateResponse để trả về một trang web.
+        # Đối tượng truyền vào hàm request: cái người ta gửi lên,
+        # cái thứ 2 là template mình muốn render hiển thị trang web
+        # cái thứ 3 là dữ liệu mà mình muốn đưa ra trang web
+        # {'course_count': course_count}: là một dictionary chứa dữ liệu mà bạn muốn truyền vào template.
+        # 'course_count' : Tên mình đặt
+        # course_count: là thứ mình đổ ra
+        return TemplateResponse(request, 'admin/course-stats.html', {
+            'course_count': course_count,
+            'stats': stats
+        })
+
+
+
+# Tạo đối tượng
+admin_site = CourseAppAdminSite('mycourse')
 
 
 # Thêm CategoryAdmin ở sau để nó kế thừa cái mình đã tạo
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Course, CourseAdmin)
-admin.site.register(Lesson, LessonAdmin)
-admin.site.register(Tag)
+admin_site.register(Category, CategoryAdmin)
+admin_site.register(Course, CourseAdmin)
+admin_site.register(Lesson, LessonAdmin)
+admin_site.register(Tag)
