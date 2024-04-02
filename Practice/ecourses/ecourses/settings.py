@@ -48,9 +48,12 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     # Phần dùng cho Debug toolbar
     'debug_toolbar',
-
+    # API
     'rest_framework',
-    'drf_yasg'
+    # Phần Swagger
+    'drf_yasg',
+    # Phần OAuth2
+    'oauth2_provider',
 
 ]
 # Phần dành cho Debug Toolbar
@@ -59,6 +62,20 @@ INTERNAL_IPS = [
     "127.0.0.1",
 
 ]
+
+REST_FRAMEWORK = {
+    # Phần phân trang
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE' : Số Item trên 1 trang
+    'PAGE_SIZE': 2,
+
+    # Phần OAuth2
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',)
+
+
+}
+
 
 # Security
 # Tầng kiểm tra trước khi gửi thông tin từ client đến server
@@ -109,7 +126,7 @@ DATABASES = {
         'HOST': ''
     }
 }
-#Lấy cái mình tạo thay vì dùng của Django
+#Lấy cái mình tạo thay vì dùng của Django, liên quan đến User
 AUTH_USER_MODEL = 'courses.User'
 
 #Tạo phần nối chuỗi

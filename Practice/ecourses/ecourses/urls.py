@@ -23,6 +23,7 @@ from drf_yasg import openapi
 from courses.admin import admin_site
 
 
+# Phần tích hợp Swagger
 schema_view = get_schema_view(
     openapi.Info(
         title="Course API",
@@ -32,6 +33,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="Trần Đặng Mỹ Tiên"),
     ),
     public=True,
+    # Cấu hình quyền được xem, AllowAny là tất cả mọi người đều được xem
     permission_classes=(permissions.AllowAny,),
 )
 
@@ -39,15 +41,18 @@ schema_view = get_schema_view(
 urlpatterns = [
     # Cộng chuỗi '' và courses.urls -> Đi tìm URL của app courses để chạy
     path('', include('courses.urls')),
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     # Phần AdminSite
-    path('admin/', admin_site.urls),
+    # path('admin/', admin_site.urls),
 
 
 
     # Phần của CKEditor
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+
     path("__debug__/", include("debug_toolbar.urls")),
+
+    # Phần tích hợp Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0),
             name='schema-json'),

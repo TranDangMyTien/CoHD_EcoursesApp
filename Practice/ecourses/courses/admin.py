@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.db.models import Count
 from django.template.response import TemplateResponse
-
-from courses.models import Category, Course, Lesson, Tag
+from django.contrib.auth.models import Permission
+from courses.models import Category, Course, Lesson, Tag, User
 from django.utils.html import mark_safe
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -141,7 +141,14 @@ admin_site = CourseAppAdminSite('mycourse')
 
 
 # Thêm CategoryAdmin ở sau để nó kế thừa cái mình đã tạo
-admin_site.register(Category, CategoryAdmin)
-admin_site.register(Course, CourseAdmin)
-admin_site.register(Lesson, LessonAdmin)
-admin_site.register(Tag)
+# admin_site.register(Category, CategoryAdmin)
+# admin_site.register(Course, CourseAdmin)
+# admin_site.register(Lesson, LessonAdmin)
+# admin_site.register(Tag)
+
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Course, CourseAdmin)
+admin.site.register(Lesson, LessonAdmin)
+admin.site.register(Tag)
+admin.site.register(User)
+admin.site.register(Permission)
