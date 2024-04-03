@@ -52,13 +52,14 @@ def login(request):
 
 # Làm việc với ModelViewSet
 class CourseViewSet(viewsets.ModelViewSet):
+    # queryset: trả về các đối tượng từ view => Ý nghĩa dòng code dưới đây là trả về các item có trường active=true
     queryset = Course.objects.filter(active=True)
     # Tạo phân trang, ghi đè cái phân trang chung bên settings.py
     pagination_class = paginators.CoursePaginator
     serializer_class = serializers.CourseSerializer
     # Từ đây nó tạo ra 5 endpoints tương ứng với 5 method
-#   list (GET) : chỉ đọc, trả về danh sách dicts
-#   retrieve (GET) : chỉ dọc, trả về một dict
+#   list (GET) : chỉ đọc = xem danh sách, trả về danh sách dicts
+#   retrieve (GET) : chỉ dọc = xem chi tiết, trả về một dict (xem chi tiết)
 #   create (POST) : tạo mới 1 resource
 #   update/partial_update (PUT/PATCH) : chỉnh sửa một resource
 #   destroy (DELETE) : xóa 1 resource
@@ -79,12 +80,55 @@ class CourseViewSet(viewsets.ModelViewSet):
     # Phần lọc dữ liệu
     def get_queryset(self):
         queries = self.queryset
-        q = self.request.query_params.get('q')
-        # Nếu q khác null có nghĩa là truy vấn
-        if q:
-            queries = queries.filter(subject__icontains=q)
-
+        # Dòng mã if self.action.__eq__('list'): trong Django REST Framework (DRF)
+        # đang kiểm tra xem hành động (action) hiện tại của view có phải là list hay không.
+        if self.action.__eq__('list'):
+            q = self.request.query_params.get('q')
+            # Nếu q khác null có nghĩa là truy vấn
+            if q:
+                # /course/?q=
+                queries = queries.filter(subject__icontains=q)
+            cate_id = self.request.query_params.get('category_id')
+            if cate_id:
+            # Dùng category__id: thì nó join 2 bảng lại với nhau
+            # Ví dụ tìm 10 lần tìm thì nó join lại 10 lần => Tốn chi phí và thời gian
+            # Nên dùng category_id vì nó được chương trình sinh ra sẵn cho khóa ngoại của mỗi bảng
+            # Ở class Course có trường khóa ngoại category => Django sinh ra 1 trường mới là category_id
+            # /course/?category_id=
+                queries = queries.filter(category_id=cate_id)
         return queries
+
+
+#     Phần truy vấn lấy bài học của khóa học (Cha là Course - con là Lesson)
+#     Thêm 1 api mới như này  /courses/{course_id}/lessons/?q=
+#     /course/ là cái xuất danh mục mình đã làm rồi
+#     Tạo api mới cần có 3 tham số như bên dưới, pk là details
+#     pk là khóa chính của Course được truyền vào
+#     Nếu đường dẫn không có {course_id} thì đừng đưa pk vào cho phức tạp
+#     details=False thì không có pk
+#     Đổi tên như yêu cầu dùng url_path='lessons'
+    @action(methods=['get'], detail=True, name='Get-lessons',
+            url_path='get-lessons', url_name='get-lessons')
+    # Sau khi đặt url_name='get-lessons' => Đường dẫn bây giờ là /courses/{course_id}/get-lesson/?q=
+    def get_lessons(self, request, pk ):
+        # Django tự động tạo ra một thuộc tính có tên là {tên_model}_set
+        # để cho phép truy xuất các đối tượng liên quan từ một mối quan hệ một-nhiều.
+        # Mối qh 1 Course - nhiều bài học => ta có lesson_set
+        l = self.get_object().lesson_set.filter(active=True).all()
+
+        q = request.query_params.get('q')
+        if q:
+            l = l.filter(subject__icontains=q)
+
+        # Bật many=True vì đây là mối quan hệ 1 - nhiều => Muốn xuất ra nhiều bài học
+        # context={'request':request} => Ảnh hiện có đường dẫn đầy đủ, cho đây là api mình tự tạo nên phải gắn như vậy
+        # return Response(serializers.LessonSerializer(l, many=True, context={'request': request}).data,
+        return Response(serializers.LessonSerializer(l, many=True).data,
+                        status=status.HTTP_200_OK)
+
+
+
+
 
 
 
@@ -94,7 +138,7 @@ class LessonViewSet(viewsets.ModelViewSet):
 
 #     Tạo API mới cho người dùng ẩn bài học đi
 #     Tất cả biến action đều phải có biến request (được gửi từ client lên)
-    @action(methods=['post'], detail=True,
+    @action(methods=['post'], detail=True, name='Hide this lesson',
             url_path='hide-lesson', url_name='hide-lesson')
     # Ngoài 5 api đã có giờ mình sẽ có thêm 1 api mới như sau
     # /lessons/{pk}/hide_lesson
@@ -110,7 +154,8 @@ class LessonViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 #       Khi thành công
-        return Response(data= serializers.LessonSerializer(l, context={'request':request}).data,
+#       context={'request':request} => Ảnh hiện có đường dẫn đầy đủ, cho đây là api mình tự tạo nên phải gắn như vậy
+        return Response(data= serializers.LessonSerializer(l, context={'request' : request}).data,
                         status=status.HTTP_200_OK)
 
 

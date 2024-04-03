@@ -81,29 +81,34 @@ class Tag(BaseModel):
         return self.name
 
 
-# # Lớp tương tác
-# class Interaction(BaseModel):
-#     # Khóa ngoại, một người sẽ có nhiều tương tác
-#     # User hủy thì Interaction sẽ mất
-#     # CASCADE : Bảng chứa khóa chính mất thì bảng chứa khóa ngoại sẽ mất theo
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     # Một bài học có nhiểu người tương tác tương tác
-#     # CASCADE: Bảng chưa khóa chính mất thì bảng chưa khóa ngoãi sẽ mất theo
-#     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-#
-#     # Mặc dù kế thừa lớp cha BaseModel nhưng, nhưng nó ko kế thừa trừu tượng
-#     # Bậc trừu tượng cho nó
-#     class Meta:
-#         abstract = True
+# Lớp tương tác
+class Interaction(BaseModel):
+    # Khóa ngoại, một người sẽ có nhiều tương tác
+    # User hủy thì Interaction sẽ mất
+    # CASCADE : Bảng chứa khóa chính mất thì bảng chứa khóa ngoại sẽ mất theo
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Một bài học có nhiều người tương tác tương tác
+    # CASCADE: Bảng chưa khóa chính mất thì bảng chưa khóa ngoãi sẽ mất theo
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
-# # Cho lớp comment kế thừa lớp Interaction
-# class Comment(Interaction):
-#     content = models.CharField(max_length=255)
-#
-#
-# # Tạo class like như fb (like 2 lần = unlike)
-# class Like(Interaction):
-#     class Meta:
+    # user_id và lesson_id phát sinh ra từ trường user và lesson
+    def __str__(self):
+        return f'{self.user_id} - {self.lesson_id}'
+
+    # Mặc dù kế thừa lớp cha BaseModel nhưng, nhưng nó ko kế thừa trừu tượng
+    # Bậc trừu tượng cho nó
+    class Meta:
+        abstract = True
+
+# Cho lớp comment kế thừa lớp Interaction
+class Comment(Interaction):
+    content = models.CharField(max_length=255)
+
+
+# Tạo class like như fb (like 2 lần = unlike)
+class Like(Interaction):
+    class Meta:
+        unique_together = ('user', 'lesson')
 
 
 
