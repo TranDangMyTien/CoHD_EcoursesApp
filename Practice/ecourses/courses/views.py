@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from rest_framework import viewsets, generics, permissions, status
+# parsers : Để úp ảnh lên Cloud
+from rest_framework import viewsets, generics, permissions, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from courses.models import Category, Course, Lesson
+from courses.models import Category, Course, Lesson, User
 # import cả serializers.py rồi nên không cần làm kiểu này nữa
 # form .serializers import CourseSerializer, LessonSerializer
 from courses import serializers, paginators
@@ -20,9 +21,9 @@ from django.views import View
 
 
 # Làm việc với GenericViewSet
-# class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
-#     queryset = Category.objects.all()
-#     serializer_class = serializers.CategorySerializer
+class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
 #
 #
 # class CourseViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -67,15 +68,19 @@ class CourseViewSet(viewsets.ModelViewSet):
 #      permission_classes -> Muốn thực thi API thì phải ở trạng thái đã đăng nhập
 #     permission_classes = [permissions.IsAuthenticated]
 
+
+#     PHÂN QUYỀN
 #     Ví dụ: Ràng buộc, xem danh sách thì ai cũng xem được, các thao tác còn lại thì phải đăng nhập
 #  => Phải ghi đè lại permission_classes = [permissions.IsAuthenticated]
-    def get_permissions(self):
-        # Ai cũng có thể xem danh sách
-        if self.action == 'list':
-            return [permissions.AllowAny()]
+#     def get_permissions(self):
+#         # Ai cũng có thể xem danh sách
+#         if self.action == 'list':
+#             return [permissions.AllowAny()]
+#
+#         # Các quyền còn lại đăng nhập mới được thực hiện
+#         return [permissions.IsAuthenticated()]
 
-        # Các quyền còn lại đăng nhập mới được thực hiện
-        return [permissions.IsAuthenticated()]
+
 
     # Phần lọc dữ liệu
     def get_queryset(self):
@@ -107,24 +112,24 @@ class CourseViewSet(viewsets.ModelViewSet):
 #     Nếu đường dẫn không có {course_id} thì đừng đưa pk vào cho phức tạp
 #     details=False thì không có pk
 #     Đổi tên như yêu cầu dùng url_path='lessons'
-    @action(methods=['get'], detail=True, name='Get-lessons',
-            url_path='get-lessons', url_name='get-lessons')
-    # Sau khi đặt url_name='get-lessons' => Đường dẫn bây giờ là /courses/{course_id}/get-lesson/?q=
-    def get_lessons(self, request, pk ):
-        # Django tự động tạo ra một thuộc tính có tên là {tên_model}_set
-        # để cho phép truy xuất các đối tượng liên quan từ một mối quan hệ một-nhiều.
-        # Mối qh 1 Course - nhiều bài học => ta có lesson_set
-        l = self.get_object().lesson_set.filter(active=True).all()
-
-        q = request.query_params.get('q')
-        if q:
-            l = l.filter(subject__icontains=q)
-
-        # Bật many=True vì đây là mối quan hệ 1 - nhiều => Muốn xuất ra nhiều bài học
-        # context={'request':request} => Ảnh hiện có đường dẫn đầy đủ, cho đây là api mình tự tạo nên phải gắn như vậy
-        # return Response(serializers.LessonSerializer(l, many=True, context={'request': request}).data,
-        return Response(serializers.LessonSerializer(l, many=True).data,
-                        status=status.HTTP_200_OK)
+#     @action(methods=['get'], detail=True, name='Get-lessons',
+#             url_path='get-lessons', url_name='get-lessons')
+#     # Sau khi đặt url_name='get-lessons' => Đường dẫn bây giờ là /courses/{course_id}/get-lesson/?q=
+#     def get_lessons(self, request, pk ):
+#         # Django tự động tạo ra một thuộc tính có tên là {tên_model}_set
+#         # để cho phép truy xuất các đối tượng liên quan từ một mối quan hệ một-nhiều.
+#         # Mối qh 1 Course - nhiều bài học => ta có lesson_set
+#         l = self.get_object().lesson_set.filter(active=True).all()
+#
+#         q = request.query_params.get('q')
+#         if q:
+#             l = l.filter(subject__icontains=q)
+#
+#         # Bật many=True vì đây là mối quan hệ 1 - nhiều => Muốn xuất ra nhiều bài học
+#         # context={'request':request} => Ảnh hiện có đường dẫn đầy đủ, cho đây là api mình tự tạo nên phải gắn như vậy
+#         # return Response(serializers.LessonSerializer(l, many=True, context={'request': request}).data,
+#         return Response(serializers.LessonSerializer(l, many=True).data,
+#                         status=status.HTTP_200_OK)
 
 
 
@@ -135,6 +140,8 @@ class CourseViewSet(viewsets.ModelViewSet):
 class LessonViewSet(viewsets.ModelViewSet):
     queryset = Lesson.objects.filter(active=True)
     serializer_class = serializers.LessonSerializer
+    # Dùng upload ảnh lên Cloud
+    parser_classes = [parsers.MultiPartParser]
 
 #     Tạo API mới cho người dùng ẩn bài học đi
 #     Tất cả biến action đều phải có biến request (được gửi từ client lên)
@@ -158,7 +165,23 @@ class LessonViewSet(viewsets.ModelViewSet):
         return Response(data= serializers.LessonSerializer(l, context={'request' : request}).data,
                         status=status.HTTP_200_OK)
 
+     
 
+#   Làm việc với GenericViewSet vì UserViewSet không cần tạo ra các default
+#   Liên đến User thì tất cả nên dùng Post để bảo mật, crate=post
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
+    queryset = User.objects.filter(is_active=True).all()
+    serializer_class = serializers.UserSerializer
+# Dùng upload ảnh lên Cloud
+    parser_classes = [parsers.MultiPartParser]
+
+
+
+
+
+#     queryset = Post.objects.all().order_by('-date')
+# order_by() là một phương thức của queryset trong Django được sử dụng để sắp xếp kết quả truy vấn.
+# Khi sử dụng '-date' trong Django, nó có nghĩa là sắp xếp từ mới đến cũ
 
 # DEMO
 # class TestView(View):

@@ -17,8 +17,10 @@ from .import views
 router = DefaultRouter()
 # Phần đầu tiên là prefix, tiếp đầu ngữ -> Phần đầu mà URL nó tạo ra cho mình
 # Phần thứ 2 là viewsest
-router.register('courses', views.CourseViewSet, basename='categories')
+router.register('categories', views.CategoryViewSet, basename='categories')
+router.register('courses', views.CourseViewSet, basename='courses')
 router.register('lessons', views.LessonViewSet, basename='lessons')
+router.register('users', views.UserViewSet, basename='users')
 
 
 

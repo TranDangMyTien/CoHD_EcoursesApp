@@ -5,7 +5,7 @@ from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class User(AbstractUser):
-    avatar = models.ImageField(upload_to='users/%Y/%m', null=True)
+    avatar = CloudinaryField('avatar', null=True)
 
 # calss abstract
 class BaseModel(models.Model):
@@ -67,8 +67,8 @@ class Lesson(BaseModel):
     # Vì chỉ định đường dẫn nên chỉ còn như này
     image = CloudinaryField()
     course = models.ForeignKey(Course, related_name="lessons", on_delete=models.CASCADE)
-    # blank=True: Được phép rỗng
-    # null=True : Được phép trống
+    # blank=True: Được phép rỗng, khi người dùng (client) quên truyền tham số thì nó vẫn cho chạy
+    # null=True : Được phép trống, Database ở MySQL được phép null
     tags = models.ManyToManyField('Tag', blank=True, null=True)
     class Meta:
         unique_together = ('subject', 'course')
@@ -92,6 +92,8 @@ class Interaction(BaseModel):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
     # user_id và lesson_id phát sinh ra từ trường user và lesson
+    # def __str__(self) -> Nối chuỗi
+    # VD: user_id là 1 lesson_id là 100 => 1-100
     def __str__(self):
         return f'{self.user_id} - {self.lesson_id}'
 
