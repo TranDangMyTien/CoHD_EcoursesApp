@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from django.template.response import TemplateResponse
 from django.contrib.auth.models import Permission
-from courses.models import Category, Course, Lesson, Tag, User
+from courses.models import Category, Course, Lesson, Tag, User, Comment
 from django.utils.html import mark_safe
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -38,16 +38,19 @@ class CourseForm(forms.ModelForm):
 
 
 class CategoryAdmin(admin.ModelAdmin):
+    # Cột mà danh sách hiện ra
     list_display = ['id', 'name']
+    # Tìm theo trường
     search_fields = ['name', 'created_date']
 
-
+# Đang thêm Course thì thêm luôn Lesson nhờ vào khóa ngoại
 class LessonInline(admin.StackedInline):
     model = Lesson
     pk_name = 'course'
-
+# Khi thêm Lesson sẽ có luôn phần thêm Tag. Mối quan hệ nhiều nhiều (nhiều bài học và nhiều tag)
 class LessonTagInline(admin.TabularInline):
     model = Lesson.tags.through
+
 
 class CourseAdmin(admin.ModelAdmin):
     # Dùng đề ghi đè
@@ -152,3 +155,4 @@ admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Tag)
 admin.site.register(User)
 admin.site.register(Permission)
+admin.site.register(Comment)

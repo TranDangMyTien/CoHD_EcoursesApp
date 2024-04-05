@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from courses.models import Category, Course, Lesson, Tag, User
+from courses.models import Category, Course, Lesson, Tag, User, Comment
 
 
 class TagSerializers(ModelSerializer):
@@ -56,21 +56,46 @@ class CourseSerializer(BaseSerializers):
 
 
 class LessonSerializer(BaseSerializers):
+
+    # CHỈ ĐƯỜNG DẪN TUYỆT ĐỐI ẢNH ĐƯỢC UP TRÊN CLOUDINARY
+    # to_representation ùy chỉnh cách biểu diễn (representation) của một đối tượng (instance) khi nó được chuyển đổi thành dữ liệu JSON
+    # hoặc dữ liệu khác để trả về cho client.
+    # instance ở đây là Lesson
+    # LỖI PHẦN SWAGGER
+    def to_representation(self, instance):
+        req = super().to_representation(instance)
+        if instance.image:
+            req['image'] = instance.image.url
+        return req
+
     # tags = TagSerializers(many=True)
     class Meta:
         model = Lesson
         # 'tags' bây giờ chứa thông tin 'id' và 'name' do truyền bằng TagSerializer
-        fields = ['id', 'subject', 'content', 'image', 'created_date', 'tags', 'image']
-
+        fields = ['id', 'subject', 'content', 'created_date', 'image']
 
 
 class LessonDetailsSerializer(LessonSerializer):
-# NOTE: Khi kế thừa thì thuộc tính kế thừa chứ Meta ko kế thừa, cần viết lại
+    tags = TagSerializers(many=True)
+
     class Meta:
         model = LessonSerializer.Meta.model
-        fields = LessonSerializer.Meta.fields + ['content', 'tags']
+        fields = LessonSerializer.Meta.fields + ['tags', 'content']
+
+
+
 
 class UserSerializer(ModelSerializer):
+    # CHỈ ĐƯỜNG DẪN TUYỆT ĐỐI ẢNH ĐƯỢC UP TRÊN CLOUDINARY
+    # to_representation ùy chỉnh cách biểu diễn (representation) của một đối tượng (instance) khi nó được chuyển đổi thành dữ liệu JSON
+    # hoặc dữ liệu khác để trả về cho client.
+    # instance ở đây là User
+    def to_representation(self, instance):
+        req = super().to_representation(instance)
+        # Nếu ảnh khác null mới làm
+        if instance.avatar:
+            req['avatar'] = instance.avatar.url
+        return req
     class Meta:
         model = User
         # Qua models.py -> ctrl + trỏ vào AbstractUser để thấy được các trường củ User
@@ -106,3 +131,10 @@ class UserSerializer(ModelSerializer):
         user.save()
         return user
 
+
+class CommentSerializer(serializers.ModelSerializer):
+    # Một comment cho 1 người tạo nên không gán many = True
+    user = UserSerializer()
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'created_date', 'updated_date', 'user']

@@ -62,10 +62,10 @@ class Course (BaseModel):
 
 class Lesson(BaseModel):
     subject = models.CharField(max_length=100, null=False)
-    content = RichTextField()
+    content = RichTextField(null=True)
     # image = models.ImageField(upload_to='lessons/%Y/%m')
     # Vì chỉ định đường dẫn nên chỉ còn như này
-    image = CloudinaryField()
+    image = CloudinaryField('image', null=True)
     course = models.ForeignKey(Course, related_name="lessons", on_delete=models.CASCADE)
     # blank=True: Được phép rỗng, khi người dùng (client) quên truyền tham số thì nó vẫn cho chạy
     # null=True : Được phép trống, Database ở MySQL được phép null
