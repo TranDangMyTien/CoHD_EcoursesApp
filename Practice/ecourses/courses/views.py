@@ -21,7 +21,17 @@ from django.views import View
 
 
 # Làm việc với GenericViewSet
-class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
+# Một ViewSet có thể add nhiều api
+# ListAPIView = GET : Xem danh sách
+# RetrieveAPIView = GET : Xem chi tiết
+# DestroyAPIView = DELETE : Xóa
+# CreateAPIView = POST : Tạo mới
+# UpdateAPIView = PUT/PATCH = Cập nhật toàn bộ/ một phần
+# ListCreateAPIView = GET + POST : Xem danh sách + tạo mới
+# RetrieveUpdateAPIView = GET + PUT + PATCH : Xem chi tiết + cập nhật toàn phần + cập nhật một phần
+# RetrieveDestroyAPIView = GET + DELETE : Xem chi tiết + xóa
+# RetrieveUpdateDestroyAPIView = GET + PUT + PATCH + DELETE : Xem chi tiết + cập nhật toàn phần + cập nhật một phần + xóa
+class CategoryViewSet(viewsets.ViewSet, generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
 #
@@ -66,7 +76,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 #   destroy (DELETE) : xóa 1 resource
 
 #      permission_classes -> Muốn thực thi API thì phải ở trạng thái đã đăng nhập
-#     permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 #     PHÂN QUYỀN
@@ -174,6 +184,9 @@ class LessonViewSet(viewsets.ModelViewSet):
 #     Thêm api mới  /lessons/{lesson_id}/comments/
     @action(methods=['get'], url_path='comments', detail=True, name='Get comment')
     def get_comments(self, request, pk):
+
+
+
         # Truy vấn ngược từ Lesson qua Comment (1 Lesson - Nhiều Comment)
         # comment_set do Django tạo ra -> để truy vấn ngược
         # Phương thức select_related() được sử dụng để tải trước (prefetch) các đối tượng liên kết theo một cách thông minh.
@@ -182,7 +195,18 @@ class LessonViewSet(viewsets.ModelViewSet):
         # Phương thức order_by() được sử dụng để sắp xếp các kết quả của truy vấn theo một hoặc nhiều trường dữ liệu.
         # -id : comment mới nhất sẽ xuất hiện đầu tiên.
         comments = self.get_object().comment_set.select_related('user').order_by("-id")
-
+        # paginators.CommentPaginator() đang tạo một instance của custom paginator
+        paginator = paginators.CommentPaginator()
+        # paginate_queryset() là một phương thức của paginator được sử dụng để phân trang một tập hợp dữ liệu
+        # Nhận đầu vào là comments
+        # Phương thức này thực hiện việc phân trang dữ liệu dựa trên các thông tin trong request,
+        # chẳng hạn như số trang hiện tại, kích thước trang, vv., và trả về một trang (page) của dữ liệu đã được phân trang.
+        # => Từ những comments cho client tạo thì mình phân trang trên đó
+        page = paginator.paginate_queryset(comments, request)
+        # if page is not None: đang kiểm tra xem việc phân trang dữ liệu đã thành công hay không => Thành công thì qua bước tiếp theo
+        if page is not None:
+            serializer = serializers.CommentSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         return Response(serializers.CommentSerializer(comments, many=True).data,
                         status=status.HTTP_200_OK)
 
@@ -191,18 +215,48 @@ class LessonViewSet(viewsets.ModelViewSet):
 
 #   Làm việc với GenericViewSet vì UserViewSet không cần tạo ra các default
 #   Liên đến User thì tất cả nên dùng Post để bảo mật, crate=post
-# class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
     queryset = User.objects.filter(is_active=True).all()
     serializer_class = serializers.UserSerializer
     # Dùng upload ảnh lên Cloud
     parser_classes = [parsers.MultiPartParser,]
 
+    def get_permissions(self):
+    # Kiểm tra xem hành động hiện tại của ViewSet có nằm trong danh sách các hành động được chỉ định hay không
+    # self.action : xác định hành động hiện tại
+        if self.action in ['get_current_user']:
+            #  Đăng nhập mới được thực hiện được các thao tác
+            return [permissions.IsAuthenticated()]
+        # Ai cũng có thể thao tác được
+        return [permissions.AllowAny()]
+
+
+
+#   Tạo api mới
+#   Lấy thông tin của current user => Người dùng chỉ được xem thông tin của mình mà thoi
+#   detail = False => Không cho gửi id, chỉ khi nào chứng thực mới được vào
+#   Cập nhật 1 phần profile => patch
+    @action(methods=['get', 'patch'], url_path='current-user', detail=False)
+    def get_current_user(self, request):
+#   Đã được chứng thực rồi thì không cần truy vấn nữa => Xác định đây là người dùng luôn
+        if request.method.__eq__('PATCH'):
+            # user = user hiện đang đăng nhập
+            user = request.user
+
+        else:
+            return Response(serializers.UserSerializer(request.user).data)
+
+
+# Vừa tạo api delete + update
+# /users/{id}/ => Như này thì không an toàn, vì khi biết id của người khác thì có thể cập nhật lại
 class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = serializers.CommentSerializer
     # permission_classes = [perms.CommentOwner]
+
+
+
 
 
 
