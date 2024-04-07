@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from courses.models import Category, Course, Lesson, User, Comment
 # import cả serializers.py rồi nên không cần làm kiểu này nữa
 # form .serializers import CourseSerializer, LessonSerializer
-from courses import serializers, paginators
+from courses import serializers, paginators, perms
 from django.views import View
 
 
@@ -149,11 +149,18 @@ class CourseViewSet(viewsets.ModelViewSet):
 class LessonViewSet(viewsets.ModelViewSet):
     # queryset = Lesson.objects.filter(active=True)
     # prefetch_related('tags'): Phương thức prefetch_related() được sử dụng để tải trước các đối tượng liên kết (foreign key)
-    # hoặc đối tượng liên kết nhiều-nhiều (many-to-many) từ cơ sở dữ liệu.
+    # hoặc đối tượng liên kết nhiều-nhiều (many-to-many) từ cơ sở dữ liệu. => DÙNG TRONG MANY TO MANY
     # Trong trường hợp này, 'tags' là tên của trường mà Lesson liên kết đến.
     # 'tags' khóa ngoại của Lesson
     queryset = Lesson.objects.prefetch_related('tags').filter(active=True)
     serializer_class = serializers.LessonDetailsSerializer
+
+    # Tạo phần chứng thực
+    def get_permissions(self):
+        # Rơi vào các hoạt động 'add_comment', 'hide_lesson' thì cần chứng thực mới được làm
+        if self.action in ['add_comment', 'hide_lesson']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     # Dùng upload ảnh lên Cloud
     # LỖI PHẦN SWAGGER
@@ -191,7 +198,7 @@ class LessonViewSet(viewsets.ModelViewSet):
         # comment_set do Django tạo ra -> để truy vấn ngược
         # Phương thức select_related() được sử dụng để tải trước (prefetch) các đối tượng liên kết theo một cách thông minh.
         # Sử dụng select_related('user') giúp tải trước tất cả các đối tượng User liên kết với các bản ghi Comment,
-        # giúp tăng hiệu suất khi truy cập các trường của User sau này.
+        # giúp tăng hiệu suất khi truy cập các trường của User sau này. => select_related('user') => DÙNG TRONG MANY TO ONE
         # Phương thức order_by() được sử dụng để sắp xếp các kết quả của truy vấn theo một hoặc nhiều trường dữ liệu.
         # -id : comment mới nhất sẽ xuất hiện đầu tiên.
         comments = self.get_object().comment_set.select_related('user').order_by("-id")
@@ -209,6 +216,20 @@ class LessonViewSet(viewsets.ModelViewSet):
             return paginator.get_paginated_response(serializer.data)
         return Response(serializers.CommentSerializer(comments, many=True).data,
                         status=status.HTTP_200_OK)
+
+
+#   Thêm API mới /lessons/{lesson_id}/comments/ => Thêm một bình luận mới vào bài học
+    @action(methods=['post'], url_path='comments', detail=True)
+    def add_comment(self, request, pk ):
+        # Thay vì viết Comment.objects.create(content='..', lesson  user,...)
+        # Viết ngắn gọn hơn
+        # self (từ Lesson)
+        # Chỉ lấy user = request.user => Cái đã được chứng thực
+        c = self.get_object().comment_set.create(content=request.data.get('content'),
+                                             user=request.user)
+        # Không có many = True => Mỗi lần chỉ tạo 1 commentSai với nguyên tắc bảo mật
+        # Tạo comment mới nên trả về trạng thái 201 OK => Cho người dùng biết đã tao thành công
+        return Response(serializers.CommentSerializer(c).data, status=status.HTTP_201_CREATED)
 
 
      
@@ -233,27 +254,31 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
 
 
-#   Tạo api mới
+#   Tạo api mới /users/current-user/
 #   Lấy thông tin của current user => Người dùng chỉ được xem thông tin của mình mà thoi
 #   detail = False => Không cho gửi id, chỉ khi nào chứng thực mới được vào
 #   Cập nhật 1 phần profile => patch
     @action(methods=['get', 'patch'], url_path='current-user', detail=False)
     def get_current_user(self, request):
 #   Đã được chứng thực rồi thì không cần truy vấn nữa => Xác định đây là người dùng luôn
+        user = request.user
+        # Khi so sánh thì viết hoa hết
         if request.method.__eq__('PATCH'):
             # user = user hiện đang đăng nhập
-            user = request.user
+            for k, v in request.data.items():
+                # Thay vì viết user.first_name = v
+                setattr(user, k, v)
+            user.save()
 
-        else:
-            return Response(serializers.UserSerializer(request.user).data)
+        return Response(serializers.UserSerializer(user).data)
 
 
 # Vừa tạo api delete + update
-# /users/{id}/ => Như này thì không an toàn, vì khi biết id của người khác thì có thể cập nhật lại
 class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = serializers.CommentSerializer
-    # permission_classes = [perms.CommentOwner]
+    # Truyền dạng call_back
+    permission_classes = [perms.CommentOwner]
 
 
 
