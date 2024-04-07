@@ -82,6 +82,19 @@ class LessonDetailsSerializer(LessonSerializer):
         model = LessonSerializer.Meta.model
         fields = LessonSerializer.Meta.fields + ['tags', 'content']
 
+# Xử lý phần Like -> Đăng nhập thì like nó đổi màu (phần Lesson)
+# AuthenticatedLessonDetailsSerializer : xử lý phần tô đậm khi like (đăng nhập rồi khi like thì sẽ tô đậm)
+class AuthenticatedLessonDetailsSerializer(LessonDetailsSerializer):
+    liked = serializers.SerializerMethodField()
+
+    # lesson chính là instance ở phía dưới class Meta
+    def get_liked(self, lesson):
+        # exists : có tồn tại không
+        return lesson.like_set.filter(active=True).exists()
+
+    class Meta:
+        model = LessonDetailsSerializer.Meta.model
+        fields = LessonDetailsSerializer.Meta.fields + ['liked']
 
 
 
@@ -138,3 +151,4 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'content', 'created_date', 'updated_date', 'user']
+

@@ -5,7 +5,7 @@ from rest_framework import viewsets, generics, permissions, status, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from courses.models import Category, Course, Lesson, User, Comment
+from courses.models import Category, Course, Lesson, User, Comment, Like
 # import cả serializers.py rồi nên không cần làm kiểu này nữa
 # form .serializers import CourseSerializer, LessonSerializer
 from courses import serializers, paginators, perms
@@ -31,7 +31,7 @@ from django.views import View
 # RetrieveUpdateAPIView = GET + PUT + PATCH : Xem chi tiết + cập nhật toàn phần + cập nhật một phần
 # RetrieveDestroyAPIView = GET + DELETE : Xem chi tiết + xóa
 # RetrieveUpdateDestroyAPIView = GET + PUT + PATCH + DELETE : Xem chi tiết + cập nhật toàn phần + cập nhật một phần + xóa
-class CategoryViewSet(viewsets.ViewSet, generics.RetrieveUpdateDestroyAPIView):
+class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView ,generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
 #
@@ -155,12 +155,24 @@ class LessonViewSet(viewsets.ModelViewSet):
     queryset = Lesson.objects.prefetch_related('tags').filter(active=True)
     serializer_class = serializers.LessonDetailsSerializer
 
+
+
+
     # Tạo phần chứng thực
     def get_permissions(self):
         # Rơi vào các hoạt động 'add_comment', 'hide_lesson' thì cần chứng thực mới được làm
-        if self.action in ['add_comment', 'hide_lesson']:
+        if self.action in ['add_comment', 'hide_lesson', 'like']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    # Ghi đè lại serializer_class
+    # Nếu chưa chứng thực dùng LessonDetailsSerializer
+    # Chứng thực rồi dùng AuthenticatedLessonDetailsSerializer
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return serializers.AuthenticatedLessonDetailsSerializer
+
+        return self.serializer_class
 
     # Dùng upload ảnh lên Cloud
     # LỖI PHẦN SWAGGER
@@ -191,9 +203,6 @@ class LessonViewSet(viewsets.ModelViewSet):
 #     Thêm api mới  /lessons/{lesson_id}/comments/
     @action(methods=['get'], url_path='comments', detail=True, name='Get comment')
     def get_comments(self, request, pk):
-
-
-
         # Truy vấn ngược từ Lesson qua Comment (1 Lesson - Nhiều Comment)
         # comment_set do Django tạo ra -> để truy vấn ngược
         # Phương thức select_related() được sử dụng để tải trước (prefetch) các đối tượng liên kết theo một cách thông minh.
@@ -231,6 +240,24 @@ class LessonViewSet(viewsets.ModelViewSet):
         # Tạo comment mới nên trả về trạng thái 201 OK => Cho người dùng biết đã tao thành công
         return Response(serializers.CommentSerializer(c).data, status=status.HTTP_201_CREATED)
 
+#   Thêm api mới /lessons/{lesson_id}/like/ Người dùng bấm nút like trên bài học hoặc trên bình luận trong bài học,
+#   nếu bấm trên trạng thái đã like sẽ trở thành unlike => Chứng thực rồi mới được like
+    @action(methods=['post'], url_path='like', detail=True)
+    def like(self, request, pk):
+        # Xác định, lần đầu tiên là like, lần thứ 2 là unlike
+        # li tên biến do mình đặt , created tên bắt buộc
+        li, created = Like.objects.get_or_create(lesson=self.get_object(),
+                                                  user=request.user)
+        # Nếu đối tượng 'Like' tồn tại = tìm thấy => Không tạo mới not created
+        if not created:
+            # Vì trước đó đã like nên bây giờ unlike
+            li.active = not li.active
+            li.save()
+        #  self.get_object() được sử dụng để lấy đối tượng (object) cụ thể mà view đang xử lý.
+        # Trong trường hợp này self.get_object() sẽ trả về đối tượng Lesson mà yêu cầu đang xử lý (LessonDetailsSerializer)
+        # AuthenticatedLessonDetailsSerializer : xử lý phần tô đậm khi like (đăng nhập rồi khi like thì sẽ tô đậm)
+        return Response(serializers.AuthenticatedLessonDetailsSerializer(self.get_object()).data)
+
 
      
 
@@ -261,10 +288,11 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     @action(methods=['get', 'patch'], url_path='current-user', detail=False)
     def get_current_user(self, request):
 #   Đã được chứng thực rồi thì không cần truy vấn nữa => Xác định đây là người dùng luôn
+        # user = user hiện đang đăng nhập
         user = request.user
         # Khi so sánh thì viết hoa hết
         if request.method.__eq__('PATCH'):
-            # user = user hiện đang đăng nhập
+
             for k, v in request.data.items():
                 # Thay vì viết user.first_name = v
                 setattr(user, k, v)
