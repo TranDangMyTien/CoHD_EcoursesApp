@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from drf_yasg.utils import swagger_auto_schema
 # parsers : Để úp ảnh lên Cloud
 from rest_framework import viewsets, generics, permissions, status, parsers
 from rest_framework.decorators import action
@@ -10,6 +11,8 @@ from courses.models import Category, Course, Lesson, User, Comment, Like
 # form .serializers import CourseSerializer, LessonSerializer
 from courses import serializers, paginators, perms
 from django.views import View
+
+from courses.serializers import LessonSerializer
 
 
 # Create your views here.
@@ -177,6 +180,13 @@ class LessonViewSet(viewsets.ModelViewSet):
     # Dùng upload ảnh lên Cloud
     # LỖI PHẦN SWAGGER
     # parser_classes = [parsers.MultiPartParser, ]
+
+    @swagger_auto_schema(
+        operation_description='API dùng để ẩn một bài học',
+        responses={
+            status.HTTP_200_OK: LessonSerializer()
+        }
+    )
 
 #     Tạo API mới cho người dùng ẩn bài học đi
 #     Tất cả biến action đều phải có biến request (được gửi từ client lên)

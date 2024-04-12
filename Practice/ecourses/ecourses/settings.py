@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 # Phần dành cho Debug Toolbar
 INTERNAL_IPS = [
 
-    "127.0.0.1",
+    '127.0.0.1',
 
 ]
 
@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 # Chỉ URL gốc, từ đây nó ánh xạ và tìm các URL
