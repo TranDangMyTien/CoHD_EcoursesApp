@@ -62,6 +62,14 @@ INTERNAL_IPS = [
     '127.0.0.1',
 
 ]
+# Tùy chỉnh thanh CKEDITOR
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+    },
+}
 
 REST_FRAMEWORK = {
     # Phần phân trang
