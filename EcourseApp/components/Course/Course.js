@@ -1,126 +1,100 @@
-import { View, Text, Image, ScrollView, RefreshControl } from "react-native";
-import React, { useState, useEffect } from "react";
-import { Chip, List } from "react-native-paper";
-import APIs, { endpoints } from "../../configs/APIs";
+import {View, Text, Image, ScrollView} from "react-native"
 import MyStyles from "../../styles/MyStyles";
+import React, { useState, useEffect } from "react";
+import APIs, { endpoints } from "../../configs/APIs";
 import { ActivityIndicator, Searchbar } from "react-native-paper";
+import { Chip, List } from "react-native-paper";
 import moment from "moment";
-import { TouchableOpacity } from "react-native-gesture-handler";
-// import Item from "./Item";
-import "moment/locale/vi"; //Hỗ trợ tiếng VIỆT
-//import là một từ khoá trong JavaScript được sử dụng để nhập các module
-//hoặc tệp từ các nguồn khác nhau vào một module hiện tại
-//form : là một từ khoá trong import để chỉ ra nguồn mà chúng ta đang import
-//../../styles/MyStyles": Đây là đường dẫn tương đối đến tệp hoặc module mà chúng ta muốn import
 
-//Chuẩn code của JS là biến đặt tên theo lạc đà
+
 const Course = () => {
-  // Functional components
   const [categories, setCategories] = useState(null);
-  // React Hooks => sử dụng trong functional components của React để quản lý trạng thái (state) của component
-  const [courses, setCourses] = useState([]);
+  const [courses,setCourse] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [q, setQ] = useState(""); //"" khi tìm kiếm là lấy hết
+  const [q, setQ] = useState("");
   const [cateId, setCateId] = useState("");
-  const [page, setPage] = useState(1);
+  const [page,setPage] = useState(1); //Mặc định là trang số một 
 
-  
-  const loadCates = async () => {  // Dùng async : Hàm bất đồng bộ
-    //Dùng arrow function
-    try {
-      let res = await APIs.get(endpoints["categories"]); //Gán biến res = /categories
-      setCategories(res.data);  //Cập nhật data
-    } catch (ex) {
-      // Bắt lỗi
-      console.error(ex); //Xuất lỗi
+
+  const loadCates = async () => {
+    try{
+      let res = await APIs.get(endpoints['categories']);
+      setCategories(res.data);
+    }catch (ex){
+      console.error(ex);
     }
-  };
+  }
 
   const loadCourses = async () => {
-    if (page > 0) {
-      setLoading(true); // Trước khi nạp cho loading = true
-      let url = `${endpoints["courses"]}?q=${q}&category_id=${cateId}&page=${page}`; //q là biến tìm kiếm, tìm kiếm về subject của course
-      try {
-        let res = await APIs.get(url);
+    setLoading (true);
+    let url = endpoints["courses"];
+    // if (q && cateId) {
+    //   url += `?q=${q}&category_id=${cateId}&page=${page}`;
+    // } else if (q) {
+    //   url += `?q=${q}&page=${page}`;
+    // } else if (cateId) {
+    //   url += `?category_id=${cateId}&page=${page}`;
+    // }
 
-        if (res.data.next === null) setPage(0);
-
-        if (page === 1) setCourses(res.data.results);
-        else
-          setCourses((current) => {
-            return [...current, ...res.data.results];
-          });
-      } catch (ex) {
-        console.error(ex);
-      } finally {
-        //Trường hợp kết thúc hoặc bị lỗi
-        setLoading(false);
-      }
+    if (q && cateId) {
+      url += `?q=${q}&category_id=${cateId}`;
+    } else if (q) {
+      url += `?q=${q}&`;
+    } else if (cateId) {
+      url += `?category_id=${cateId}`;
     }
-  };
+
+    try{
+      let res = await APIs.get(url);
+      setCourse(res.data.results); // lấy dữ liệu theo kiểu phân trang (từ phản hồi của người dùng)
+
+    }catch(ex){
+      console.error(ex);
+    }finally{
+      setLoading(false);
+    }
+  }
+
   const search = (id, setCateId) => {
     setCateId(id);
   };
 
-  useEffect(() => {
-    loadCates();
-  }, []);
+  useEffect(
+    () => {
+      loadCates();
+    },[]
+  );
 
-  useEffect(() => {
-    loadCourses();
-  }, [q, cateId, page]); //q thay đổi thì nó gọi lại
+  useEffect(
+    () => {
+      loadCourses();
+    },[q,cateId]
+  )
 
-
-  //Trượt đến cuối thì sản phẩm sẽ được đẩy mới lên => Kiểm tra tới phần chân cuối chưa
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }) => {
+  //Hàm đo màn hình => Hỗ trợ phần lazy, trượt tới đâu thấy sản phẩm tới đó 
+  const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
     const paddingToBottom = 20;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
   };
 
-  const loadMore = ({ nativeEvent }) => {
+  //Hàm ứng dụng để load course 
+  const loadMore = ({nativeEvent}) => {
     if (isCloseToBottom(nativeEvent)) {
       console.info(Math.random());
     }
-  };
+  }
 
-  return (
+  return(
     <View style={MyStyles.container}>
-      <View style={MyStyles.row}>
-        <Text style={MyStyles.subject}>DANH MỤC KHÓA HỌC</Text>
-        <Chip
-          mode={!cateId ? "outlined" : "flat"}
-          style={MyStyles.margin}
-          icon="tag"
-          onPress={() => search("", setCateId)}
-        >
-          Tất cả
-        </Chip>
-        {categories === null ? (
-          <ActivityIndicator />
-        ) : (
-          <>
-            {categories.map((c) => (
-              <Chip
-                mode={c.id === cateId ? "outlined" : "flat"}
-                style={MyStyles.margin}
-                key={c.id}
-                icon="shape-outline"
-                onPress={() => search(c.id, setCateId)}
-              >
-                {c.name}
-              </Chip>
-            ))}
-          </>
-        )}
+      <Text style={MyStyles.subject}>DANH MỤC KHÓA HỌC</Text>
+      <View style={[MyStyles.row, MyStyles.wrap]}>
+      <Chip mode={!cateId ? "outlined" : "flat"} style={MyStyles.margin} icon="tag" onPress={() => search("", setCateId)}>Tất cả</Chip>
+       {categories===null?<ActivityIndicator/>:<>
+          {categories.map(c => <Chip mode={c.id === cateId ? "outlined" : "flat"} onPress={() => search(c.id, setCateId)} style={MyStyles.margin} key={c.id} icon="shape-outline">{c.name}</Chip>)}
+      </>}
       </View>
-
+      
       <View>
         <Searchbar
           placeholder="Tìm kiếm khóa học..."
@@ -128,17 +102,17 @@ const Course = () => {
           onChangeText={setQ}
         />
       </View>
-      <ScrollView onScroll={loadMore}>  
-        <RefreshControl onRefresh={() => loadCourses()} />
+
+      <ScrollView onScroll={loadMore}>
         {loading && <ActivityIndicator />}
-        {courses.map(c => <List.Item key={c.id} title={c.subject} description={moment(c.created_date).fromNow()}
-        left={() => <Image style={MyStyles.avatar} source={{uri: c.image}} />} />)}
-        
+        {courses && courses.map(c => <List.Item key={c.id} title={c.subject} description={moment(c.created_date).fromNow()} left={() => <Image style={MyStyles.avatar} source={{uri: c.image}} />} /> )}
       </ScrollView>
+   
     </View>
   );
-};
+}
 
 export default Course;
 
-//onScroll={loadMore} : Sự kiện đang trượt 
+
+//

@@ -16,13 +16,14 @@ export default StyleSheet.create(
         }
         , row:{
             flexDirection: "row",
-            flexWrap:"wrap"
         }, margin:{
             margin: 8
         }, avatar:{
             width: 80,
             height: 80,
             borderRadius: 20,
+        },wrap:{
+            flexWrap: "wrap"
         }
 
     }
