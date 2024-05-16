@@ -4,8 +4,8 @@ from rest_framework import pagination
 
 # Tạo phân trang cho Course
 class CoursePaginator(pagination.PageNumberPagination):
-    page_size = 2
+    page_size = 5
 
 # Tạo phân trang cho Comment
 class CommentPaginator(pagination.PageNumberPagination):
-    page_size = 2
+    page_size = 5

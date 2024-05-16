@@ -35,17 +35,24 @@ class CategorySerializer(ModelSerializer):
 
 class CourseSerializer(BaseSerializers):
     # Trường image lấy từ model Course
-    image = serializers.SerializerMethodField(source='image')
+
+    # image = serializers.SerializerMethodField(source='image') # Phần lưu ảnh nội bộ
     # tags = TagSerializers(many=True)
 
-    def get_image(self, course):
-        # Nếu trường image của course khác null
-        if course.image:
-            request = self.context.get('request')
-            if request:
-                # Dòng mã này đang xây dựng một URI tuyệt đối (absolute URI) dựa trên yêu cầu (request)
-                return request.build_absolute_uri('/static/%s' % course.image.name)
-            return '/static/%s' % course.image.name
+    # def get_image(self, course):  # Phần lưu ảnh nội bộ
+    #     # Nếu trường image của course khác null
+    #     if course.image:
+    #         request = self.context.get('request')
+    #         if request:
+    #             # Dòng mã này đang xây dựng một URI tuyệt đối (absolute URI) dựa trên yêu cầu (request)
+    #             return request.build_absolute_uri('/static/%s' % course.image.name)
+    #         return '/static/%s' % course.image.name
+
+    def to_representation(self, instance):
+        req = super().to_representation(instance)
+        if instance.image:
+            req['image'] = instance.image.url
+        return req
 
 
     class Meta:
@@ -147,8 +154,8 @@ class UserSerializer(ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     # Một comment cho 1 người tạo nên không gán many = True
-    user = UserSerializer()
+    # user = UserSerializer()
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'created_date', 'updated_date', 'user']
+        fields = ['id', 'content', 'created_date', 'updated_date', 'user', 'lesson']  #
 

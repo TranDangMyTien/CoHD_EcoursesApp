@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="9dc3a215-9ef4-4ebd-8188-dbdce58351f2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/CoHD_EcoursesApp.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CoHD_EcoursesApp.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/dao.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Practice/ecourses/courses/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/courses/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Practice/ecourses/ecourses/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/ecourses/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Practice/ecourses/ecourses/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Practice/ecourses/ecourses/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,9 +25,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="2edoKVEeSNwSMSHkX5ykEQY3293" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,7 +38,8 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "D:/CCNLTHD/CoHD_EcoursesApp/Practice/ecourses"
+    "last_opened_file_path": "D:/CCNLTHD/CoHD_EcoursesApp",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PythonContentEntriesConfigurable"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />

@@ -28,3 +28,4 @@ def get_courses(**params):
 # Đếm số lượng khóa học mỗi danh mục theo các giá trị chỉ định, sắp xếp tăng dần theo số lượng
 def count_courses_by_cate():
     return Category.objects.annotate(count=Count('course__id')).values('id', 'name', 'count').order_by('count')
+

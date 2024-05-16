@@ -34,7 +34,7 @@ from courses.serializers import LessonSerializer
 # RetrieveUpdateAPIView = GET + PUT + PATCH : Xem chi tiết + cập nhật toàn phần + cập nhật một phần
 # RetrieveDestroyAPIView = GET + DELETE : Xem chi tiết + xóa
 # RetrieveUpdateDestroyAPIView = GET + PUT + PATCH + DELETE : Xem chi tiết + cập nhật toàn phần + cập nhật một phần + xóa
-class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView ,generics.RetrieveUpdateDestroyAPIView):
+class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView, generics.UpdateAPIView, generics.RetrieveAPIView): # , generics.RetrieveUpdateDestroyAPIView
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
 #
@@ -79,7 +79,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 #   destroy (DELETE) : xóa 1 resource
 
 #      permission_classes -> Muốn thực thi API thì phải ở trạng thái đã đăng nhập
-    permission_classes = [permissions.IsAuthenticated]
+#     permission_classes = [permissions.IsAuthenticated]
 
 
 #     PHÂN QUYỀN
@@ -297,7 +297,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 #   Cập nhật 1 phần profile => patch
     @action(methods=['get', 'patch'], url_path='current-user', detail=False)
     def get_current_user(self, request):
-#   Đã được chứng thực rồi thì không cần truy vấn nữa => Xác định đây là người dùng luôn
+        # Đã được chứng thực rồi thì không cần truy vấn nữa => Xác định đây là người dùng luôn
         # user = user hiện đang đăng nhập
         user = request.user
         # Khi so sánh thì viết hoa hết
@@ -312,11 +312,11 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
 
 
 # Vừa tạo api delete + update
-class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
+class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView, generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = serializers.CommentSerializer
     # Truyền dạng call_back
-    permission_classes = [perms.CommentOwner]
+    # permission_classes = [perms.CommentOwner]
 
 
 

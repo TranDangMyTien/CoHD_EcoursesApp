@@ -59,6 +59,7 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['subject', 'created_date', 'category__name']
     readonly_fields = ['avatar']
     inlines = (LessonInline, )
+    # Phần này này lưu ảnh ở máy local
     def avatar(self, course):
         return mark_safe("<img src='/static/{img_url}' alt='{alt}' width=120px/>".format(img_url=course.image.name, alt=course.subject))
 
@@ -75,7 +76,7 @@ class LessonAdmin(admin.ModelAdmin):
     search_fields = ['subject', 'created_date', 'course__subject']
     # course__subject : tìm theo khóa ngoại
     # Thêm trường chỉ để đọc không chỉnh sửa
-    readonly_fields = ['avatar']
+    readonly_fields = ['image']
 
     # self là this trong hướng đối tượng
     # obj là đại diện model
@@ -87,6 +88,7 @@ class LessonAdmin(admin.ModelAdmin):
     #     '''.format(img_url=obj.image.name), alt = obj.subject)
 
     # {img_url} sẽ được thay thế bằng đường dẫn đến hình ảnh được cung cấp trong đối tượng 'lesson'.
+    # có thể ghi là obj cũng được ở phần def avatar(self, obj)
     def avatar(self, lesson):
         # Trường hợp up ảnh lên couldinary
         if lesson.image:
@@ -111,7 +113,7 @@ class CourseAppAdminSite(admin.AdminSite):
     def get_urls(self):
         return [
             # course-stats : tên đường dẫn mình tự đặt
-            #
+            # course_stats là cái hàm phía dưới
             path('course-stats/', self.course_stats)
         ] + super().get_urls()
 
@@ -122,6 +124,8 @@ class CourseAppAdminSite(admin.AdminSite):
 
         # Đếm 1 khóa học có bao nhiêu bài học
         # Truy vấn ngược từ 1 Course -> nhiều Lesson
+        # các trường trong value là của Course
+        # lessons : tên truy vấn ngược đến Lesson (chưa được related_name)
         stats = Course.objects.annotate(lesson_count=Count('lessons')).values("id", "subject", "lesson_count" )
 
 

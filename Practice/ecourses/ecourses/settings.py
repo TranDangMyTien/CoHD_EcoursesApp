@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-hn@ykr48=4+=z30)$sq4rqh&60=vx9r@=8+t-+yrfi^h+o&qvr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['192.168.1.12']
+# 'http://192.168.36.1'
 
 # Application definition
 # Khai báo áp
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # Thêm app mới tạo (thêm hàm - để nữa muốn chỉnh sữa thì nó dễ hơn)
     # Lệnh make migrations
     'courses.apps.CoursesConfig',
+    # Phần CKEditor
     'ckeditor',
     'ckeditor_uploader',
     # Phần dùng cho Debug toolbar
@@ -54,6 +55,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     # Phần OAuth2
     'oauth2_provider',
+    # Phần CORS
+    'corsheaders',
 
 ]
 # Phần dành cho Debug Toolbar
@@ -72,10 +75,10 @@ CKEDITOR_CONFIGS = {
 }
 
 REST_FRAMEWORK = {
-    # Phần phân trang
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE' : Số Item trên 1 trang
-    'PAGE_SIZE': 2,
+    # # Phần phân trang
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # # 'PAGE_SIZE' : Số Item trên 1 trang
+    # 'PAGE_SIZE': 2,
 
     # Phần OAuth2
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -96,7 +99,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# Cho phép tất cả các domain được truy cập để lấy thông tin
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Chỉ URL gốc, từ đây nó ánh xạ và tìm các URL
 ROOT_URLCONF = 'ecourses.urls'
@@ -145,12 +152,14 @@ CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 # URL của CKEditor = MEDIA_ROOT + CKEDITOR_UPLOAD_PATH
 
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 cloudinary.config(
     cloud_name="dvxzmwuat",
     api_key="814652831379359",
-    api_secret="BzgebW7M-yEgHzKWgEf176-MK6I"
-
+    api_secret="BzgebW7M-yEgHzKWgEf176-MK6I",
+    api_proxy="http://proxy.server:3128"
 )
 
 # Password validation

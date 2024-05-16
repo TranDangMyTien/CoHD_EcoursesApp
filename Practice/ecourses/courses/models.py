@@ -5,7 +5,7 @@ from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class User(AbstractUser):
-    avatar = CloudinaryField('avatar', null=True)
+    avatar = CloudinaryField('avatar', null=True, blank=True)
 
 # calss abstract
 class BaseModel(models.Model):
@@ -42,7 +42,7 @@ class Course (BaseModel):
     # description = models.TextField(null=True, blank=True)
     description = RichTextField()
 
-    image = models.ImageField(upload_to='courses/%Y/%m', null=True)
+    image = CloudinaryField('image', null=True, blank=True)
 
     # Khóa ngoại
     # on_delete khi mà cái Class Category xóa thì cái trường category ở class này sẽ ra sao ?
@@ -65,7 +65,7 @@ class Lesson(BaseModel):
     content = RichTextField(null=True)
     # image = models.ImageField(upload_to='lessons/%Y/%m')
     # Vì chỉ định đường dẫn nên chỉ còn như này
-    image = CloudinaryField('image', null=True)
+    image = CloudinaryField('image', null=True, blank=True)
     course = models.ForeignKey(Course, related_name="lessons", on_delete=models.CASCADE)
     # blank=True: Được phép rỗng, khi người dùng (client) quên truyền tham số thì nó vẫn cho chạy
     # null=True : Được phép trống, Database ở MySQL được phép null

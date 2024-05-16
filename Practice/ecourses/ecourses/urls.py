@@ -50,7 +50,7 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
 
     # Phần của CKEditor
-    # re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+    re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
 
 
     # Phần tích hợp Swagger
@@ -65,5 +65,5 @@ urlpatterns = [
             name='schema-redoc')
 ]
 
-if settings.DEBUG:
-    urlpatterns += re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+# if settings.DEBUG:
+#     urlpatterns += re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),

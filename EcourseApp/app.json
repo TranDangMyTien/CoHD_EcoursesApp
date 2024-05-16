@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "EcourseApp",
+    "slug": "EcourseApp",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.anonymous.EcourseApp"
+    }
+  },
+  "name": "EcourseApp"
+}
