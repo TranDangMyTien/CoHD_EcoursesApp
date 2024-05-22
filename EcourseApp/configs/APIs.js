@@ -9,6 +9,9 @@ const BASE_URL = "https://mtie.pythonanywhere.com/";
 export const endpoints = {
   'categories': "/categories/",
   'courses': '/courses/',
+  'lessons': (courseId) => `/courses/${courseId}/lessons/` , //Dùng cú pháp literal dấu gần số 1 
+  'lesson-details': (lessonId) => `/lessons/${lessonId}`,
+  'comments': (lessonId) => `/lessons/${lessonId}/get_comments/`
 };
 
 export default axios.create({

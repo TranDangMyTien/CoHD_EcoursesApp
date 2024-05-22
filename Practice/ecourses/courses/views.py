@@ -143,7 +143,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response(serializers.LessonSerializer(l, many=True, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
-
+    # Lấy danh sách khóa học của 1 course
+    @action(detail=True, methods=['get'])
+    def lessons(self, request, pk=None):
+        course = self.get_object()
+        lessons = course.lessons.all()
+        serializer = LessonSerializer(lessons, many=True)
+        return Response(serializer.data)
 
 
 
@@ -161,12 +167,12 @@ class LessonViewSet(viewsets.ModelViewSet):
 
 
 
-    # Tạo phần chứng thực
-    def get_permissions(self):
-        # Rơi vào các hoạt động 'add_comment', 'hide_lesson' thì cần chứng thực mới được làm
-        if self.action in ['add_comment', 'hide_lesson', 'like']:
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+    # # Tạo phần chứng thực
+    # def get_permissions(self):
+    #     # Rơi vào các hoạt động 'add_comment', 'hide_lesson' thì cần chứng thực mới được làm
+    #     if self.action in ['add_comment', 'hide_lesson', 'like']:
+    #         return [permissions.IsAuthenticated()]
+    #     return [permissions.AllowAny()]
 
     # Ghi đè lại serializer_class
     # Nếu chưa chứng thực dùng LessonDetailsSerializer
@@ -211,7 +217,7 @@ class LessonViewSet(viewsets.ModelViewSet):
         return Response(data=serializers.LessonSerializer(l).data,
                     status=status.HTTP_200_OK)
 #     Thêm api mới  /lessons/{lesson_id}/comments/
-    @action(methods=['get'], url_path='comments', detail=True, name='Get comment')
+    @action(methods=['get'], url_path='get_comments', detail=True, name='Get comment')
     def get_comments(self, request, pk):
         # Truy vấn ngược từ Lesson qua Comment (1 Lesson - Nhiều Comment)
         # comment_set do Django tạo ra -> để truy vấn ngược
@@ -267,6 +273,8 @@ class LessonViewSet(viewsets.ModelViewSet):
         # Trong trường hợp này self.get_object() sẽ trả về đối tượng Lesson mà yêu cầu đang xử lý (LessonDetailsSerializer)
         # AuthenticatedLessonDetailsSerializer : xử lý phần tô đậm khi like (đăng nhập rồi khi like thì sẽ tô đậm)
         return Response(serializers.AuthenticatedLessonDetailsSerializer(self.get_object()).data)
+
+
 
 
      

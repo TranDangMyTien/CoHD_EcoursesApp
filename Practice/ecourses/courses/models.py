@@ -74,7 +74,8 @@ class Lesson(BaseModel):
         unique_together = ('subject', 'course')
 
     def __str__(self):
-        return self.subject
+        return f'{self.id}-{self.subject}'
+
 
 
 # Một bài học có nhiều tag, 1 tag có nhiều bài học => Quan hệ Many to Many

@@ -3,16 +3,18 @@ export default StyleSheet.create(
     {
         container:{
             flex: 1,
-            marginTop: 60,
+            marginTop: 10,
             // justifyContent: "center",
             // alignItems: "center"
         },
         subject:{
-            fontSize: 30,
+            fontSize: 25,
             fontWeight: "bold",
             color:"blue",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            alignContent: "center",
+            textAlign: 'center',   //Cho chữ vào giữa 
         }
         , row:{
             flexDirection: "row",
@@ -24,6 +26,8 @@ export default StyleSheet.create(
             borderRadius: 20,
         },wrap:{
             flexWrap: "wrap"
+        },top:{
+            marginTop: 10,
         }
 
     }
