@@ -11,8 +11,21 @@ export const endpoints = {
   'courses': '/courses/',
   'lessons': (courseId) => `/courses/${courseId}/lessons/` , //Dùng cú pháp literal dấu gần số 1 
   'lesson-details': (lessonId) => `/lessons/${lessonId}`,
-  'comments': (lessonId) => `/lessons/${lessonId}/get_comments/`
+  'comments': (lessonId) => `/lessons/${lessonId}/get_comments/`,
+  'register': '/users/',
+  'login': '/o/token/',
+  'current-user': '/users/current-user/'
 };
+
+//Xác thực người dùng 
+export const authApi = (token) => {
+  return axios.create({
+      baseURL: BASE_URL,
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+  });
+}
 
 export default axios.create({
   baseURL: BASE_URL,

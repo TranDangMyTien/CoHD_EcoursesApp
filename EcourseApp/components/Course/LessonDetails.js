@@ -1,6 +1,6 @@
 import {  ActivityIndicator, Text, View, useWindowDimensions, ScrollView , LogBox, Image} from "react-native";
 import MyStyles from "../../styles/MyStyles";
-import { Card, Chip, List } from "react-native-paper";
+import { Button, Card, Chip, List, TextInput } from "react-native-paper";
 import {useState, useEffect  } from "react";
 import APIs, { endpoints } from "../../configs/APIs";
 // import RenderHTML from "react-native-render-html";
@@ -28,7 +28,7 @@ const LessonDetails = ({route}) => {  //route này nhận giá trị từ lesson
     const [comments, setComments] = useState(null); 
     const [loading, setLoading] = useState(false);
     const [page,setPage] = useState(1); //Mặc định là trang số một 
-
+    const [content, setContent] = useState("");
     
     const loadLesson = async () => {
         try {
@@ -120,6 +120,12 @@ const LessonDetails = ({route}) => {  //route này nhận giá trị từ lesson
                     
                     </Card>
                 </>}
+                <View>
+                    <TextInput style={MyStyles.margin} multiline={true} label="Nội dung bình luận..." value={content} onChangeText={setContent}  />
+                    <View style={[MyStyles.row, {justifyContent: "flex-end"}]}>
+                        <Button style={MyStyles.margin} textColor="white" buttonColor='blue' icon="comment">Thêm bình luận</Button>
+                    </View>
+                </View>
                 <View>
                     {comments && <>
                         {comments.map(c => <List.Item key={c.id}

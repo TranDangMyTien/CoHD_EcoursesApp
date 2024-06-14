@@ -128,6 +128,7 @@ class UserSerializer(ModelSerializer):
 
         }
 
+    # Băm mật khẩu
     def create(self, validated_data):
         # dòng mã data = validated_data.copy() được sử dụng để tạo một bản sao của dữ liệu đã được xác thực (validated_data)
         # validated_data là dữ liệu đã được xác thực (validated) từ dữ liệu đầu vào.
